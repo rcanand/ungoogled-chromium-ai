@@ -1,0 +1,91 @@
+# Copyright 2024 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/buildflag_header.gni")
+import("//build/config/features.gni")
+import("//chrome/common/features.gni")
+
+# AI Sidebar component for ungoogled-chromium
+component("ai_sidebar") {
+  sources = [
+    # Backend interfaces
+    "backend/ai_backend_interface.cc",
+    "backend/ai_backend_interface.h",
+
+    # Ollama backend (all platforms)
+    "backend/ollama_backend.cc",
+    "backend/ollama_backend.h",
+
+    # OpenRouter backend (all platforms)
+    "backend/openrouter_backend.cc",
+    "backend/openrouter_backend.h",
+
+    # Model manager
+    "backend/model_manager.cc",
+    "backend/model_manager.h",
+
+    # Web search service
+    "backend/web_search_service.cc",
+    "backend/web_search_service.h",
+
+    # Page context extractor
+    "backend/page_context_extractor.cc",
+    "backend/page_context_extractor.h",
+
+    # WebUI
+    "ui/webui/ai_sidebar_ui.cc",
+    "ui/webui/ai_sidebar_ui.h",
+    "ui/webui/ai_sidebar_page_handler.cc",
+    "ui/webui/ai_sidebar_page_handler.h",
+  ]
+
+  # Add MLX backend for macOS only
+  if (is_mac) {
+    sources += [
+      "backend/mlx_backend.cc",
+      "backend/mlx_backend.h",
+    ]
+  }
+
+  deps = [
+    "//base",
+    "//chrome/browser:browser_process",
+    "//chrome/browser/profiles",
+    "//chrome/browser/ui",
+    "//chrome/common",
+    "//components/prefs",
+    "//content/public/browser",
+    "//content/public/common",
+    "//net",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+    "//third_party/skia",
+    "//ui/gfx",
+    "//ui/gfx/codec",
+    "//url",
+  ]
+
+  defines = [ "IS_AI_SIDEBAR_IMPL" ]
+}
+
+# WebUI resources
+grit("resources") {
+  source = "resources.grd"
+
+  outputs = [
+    "grit/ai_sidebar_resources.h",
+    "grit/ai_sidebar_resources_map.cc",
+    "grit/ai_sidebar_resources_map.h",
+    "ai_sidebar_resources.pak",
+  ]
+
+  output_dir = "$root_gen_dir/components/ai_sidebar"
+}
+
+# Resource IDs
+source_set("resource_ids") {
+  sources = [
+    "resource_ids.h",
+  ]
+}

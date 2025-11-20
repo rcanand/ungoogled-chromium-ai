@@ -1,6 +1,29 @@
-# ungoogled-chromium
+# ungoogled-chromium with AI Sidebar
 
 *A lightweight approach to removing Google web service dependency*
+
+## 🎯 NEW: AI Sidebar Feature
+
+This fork includes an integrated **AI Chat Sidebar** with support for:
+- 🍎 **Local MLX models** (text, image, audio) on macOS with Apple Silicon
+- 🦙 **Ollama models** (all platforms) for local inference
+- ☁️ **OpenRouter API** (all platforms) for cloud models
+
+### Key Features
+- Switch models for **each message** in a chat
+- Use current page as context
+- Web search integration (opens tabs automatically)
+- Multi-modal support (text, images, audio)
+- Searchable model library with 100+ models
+
+### Quick Start
+1. See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for build guide
+2. See [AI_SIDEBAR_DESIGN.md](AI_SIDEBAR_DESIGN.md) for architecture
+3. See [AI_SIDEBAR_SUMMARY.md](AI_SIDEBAR_SUMMARY.md) for implementation details
+
+**Note**: This feature is for **desktop only** (macOS, Linux, Windows). iOS is not supported by ungoogled-chromium.
+
+---
 
 **Help is welcome!** See the [docs/contributing.md](docs/contributing.md) document for more information.
 
