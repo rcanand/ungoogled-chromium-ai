@@ -1,0 +1,69 @@
+# Add AI Sidebar command handlers
+
+--- a/chrome/browser/ui/browser_command_controller.cc
++++ b/chrome/browser/ui/browser_command_controller.cc
+@@ -10,6 +10,7 @@
+ #include <vector>
+
+ #include "base/command_line.h"
++#include "components/ai_sidebar/resources.h"
+ #include "base/debug/debugging_buildflags.h"
+ #include "base/debug/profiling_buildflags.h"
+ #include "base/feature_list.h"
+@@ -568,6 +569,9 @@ bool BrowserCommandController::ExecuteCo
+     case IDC_SHOW_BOOKMARK_SIDE_PANEL:
+       ShowBookmarkSidePanel(browser_);
+       break;
++    case IDC_TOGGLE_AI_SIDEBAR:
++      ToggleAISidebar();
++      break;
+     case IDC_SHOW_READING_LIST_SIDE_PANEL:
+       ShowReadingListSidePanel(browser_);
+       break;
+@@ -1567,6 +1571,11 @@ void BrowserCommandController::InitComma
+   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_SIDE_PANEL,
+                                         show_bookmark_side_panel);
+
++  // AI Sidebar is always available
++  command_updater_.UpdateCommandEnabled(
++      IDC_TOGGLE_AI_SIDEBAR,
++      !base::CommandLine::ForCurrentProcess()->HasSwitch("disable-ai-sidebar"));
++
+   command_updater_.UpdateCommandEnabled(IDC_SHOW_READING_LIST_SIDE_PANEL,
+                                         show_reading_list_side_panel);
+
+@@ -2099,6 +2108,13 @@ void BrowserCommandController::UpdateCom
+   UpdateCommandsForFind();
+ }
+
++void BrowserCommandController::ToggleAISidebar() {
++  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
++  if (browser_view) {
++    browser_view->ToggleAISidebar();
++  }
++}
++
+ ///////////////////////////////////////////////////////////////////////////////
+ // BrowserCommandController, TabStripModelObserver implementation:
+
+--- a/chrome/browser/ui/browser_command_controller.h
++++ b/chrome/browser/ui/browser_command_controller.h
+@@ -235,6 +235,8 @@ class BrowserCommandController : public
+   // Performs updating of commands which are not dependent on the tab's state.
+   void UpdateCommandsForTabState();
+
++  void ToggleAISidebar();
++
+   // Updates the "paste and go" command state based on the current clipboard
+   // content and url.
+   void UpdatePasteAndGoEnabled(const std::u16string& url_str);
+--- a/chrome/app/chrome_command_ids.h
++++ b/chrome/app/chrome_command_ids.h
+@@ -21,6 +21,7 @@
+ // will generate compile errors.
+ #define IDC_MINIMIZE_WINDOW              201
+ #define IDC_MAXIMIZE_WINDOW              202
++#define IDC_TOGGLE_AI_SIDEBAR            203
+ #define IDC_PIN_TO_START_SCREEN          203
+ #define IDC_ALL_WINDOWS_FRONT            203
+ #define IDC_NAME_WINDOW                  203

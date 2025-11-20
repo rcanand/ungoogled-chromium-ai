@@ -1,0 +1,39 @@
+# Register AI Sidebar WebUI
+
+--- a/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
++++ b/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
+@@ -108,6 +108,7 @@
+ #include "chrome/browser/ui/webui/history/history_ui.h"
+ #include "chrome/browser/ui/webui/history_clusters/history_clusters_handler.h"
+ #include "chrome/browser/ui/webui/history_clusters/history_clusters_ui.h"
++#include "components/ai_sidebar/ui/webui/ai_sidebar_ui.h"
+ #include "chrome/browser/ui/webui/identity_internals_ui.h"
+ #include "chrome/browser/ui/webui/inspect_ui.h"
+ #include "chrome/browser/ui/webui/internals/internals_ui.h"
+@@ -366,6 +367,8 @@ WebUIFactoryFunction GetWebUIFactoryChr
+     return &NewWebUI<HistoryUI>;
+   if (url.host_piece() == chrome::kChromeUIHistoryClustersInternalsHost)
+     return &NewWebUI<HistoryClustersInternalsUI>;
++  if (url.host_piece() == "ai-sidebar")
++    return &NewWebUI<ai_sidebar::AISidebarUI>;
+   if (url.host_piece() == chrome::kChromeUIIdentityInternalsHost)
+     return &NewWebUI<IdentityInternalsUI>;
+   if (url.host_piece() == chrome::kChromeUIInspectHost)
+@@ -848,6 +851,7 @@ bool IsSystemWebUIHost(base::StringPiec
+       chrome::kChromeUIGpuHost,
+       chrome::kChromeUIHistogramsHost,
+       chrome::kChromeUIHistoryHost,
++      "ai-sidebar",
+       chrome::kChromeUIInspectHost,
+       chrome::kChromeUIInterstitialHost,
+       chrome::kChromeUIInvalidationsHost,
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -2915,6 +2915,7 @@ static_library("browser") {
+     "//chrome/services/speech/buildflags",
+     "//chrome/services/system_signals/public/cpp",
+     "//components/aggregation_service",
++    "//components/ai_sidebar",
+     "//components/android_autofill",
+     "//components/autofill/content/browser",
+     "//components/autofill/core/browser",

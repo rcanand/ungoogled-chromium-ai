@@ -99,13 +99,28 @@ git checkout claude/add-ai-sidebar-chat-01Pzn9zdhMpCtuSGx4GcqT33
 ### Step 3: Apply Patches to Chromium Source
 
 ```bash
-# Copy AI sidebar component to Chromium source
-cp -r component-source/ai_sidebar ~/chromium/src/components/
+# Copy AI sidebar component source to Chromium
+cp -r ~/ungoogled-chromium-ai/component-source/ai_sidebar ~/chromium/src/components/
 
-# Apply ungoogled-chromium patches
-cd ~/chromium/ungoogled-chromium-ai
-python3 -m buildkit patches apply ~/chromium/src patches/series
+# Apply ungoogled-chromium patches (includes AI sidebar integration)
+cd ~/ungoogled-chromium-ai
+python3 utils/patches.py apply ~/chromium/src patches/series
+
+# Or manually apply with patch command:
+# cd ~/chromium/src
+# for patch in ~/ungoogled-chromium-ai/patches/*/*.patch; do
+#   patch -p1 < "$patch"
+# done
 ```
+
+The patches will:
+- Add the AI sidebar component to the build system
+- Register the AI sidebar WebUI
+- Integrate the sidebar into BrowserView
+- Add the toolbar button
+- Wire up command handlers
+- Add chrome://flags entry
+- Register preferences for settings storage
 
 ### Step 4: Configure Build
 
@@ -161,17 +176,21 @@ out/Default/chrome  # Linux
 out\Default\chrome.exe  # Windows
 ```
 
-### Enable the AI Sidebar
+### Access the AI Sidebar
 
-1. Open Chromium
-2. Navigate to `chrome://flags`
-3. Search for "AI Sidebar"
-4. Enable the flag
-5. Restart the browser
+**The AI Sidebar is enabled by default!** After building and launching:
 
-### Access the Sidebar
+1. Look for the chat icon (💬) in the toolbar (next to the menu button)
+2. Click it to open the AI sidebar
+3. The sidebar will appear on the right side of the browser window
 
-Click the AI icon in the toolbar or use the keyboard shortcut to open the sidebar.
+**To disable it:**
+- Navigate to `chrome://flags`
+- Search for "disable-ai-sidebar"
+- Enable the flag to disable the AI sidebar
+- Restart the browser
+
+The sidebar toggles open/closed each time you click the toolbar button.
 
 ## Configuring AI Backends
 

@@ -1,0 +1,97 @@
+# Integrate AI Sidebar into Browser UI
+
+--- a/chrome/browser/ui/views/frame/browser_view.h
++++ b/chrome/browser/ui/views/frame/browser_view.h
+@@ -135,6 +135,10 @@ class TabSearchBubbleHost;
+ class TabStripRegionView;
+ class ToolbarView;
+
++namespace views {
++class WebView;
++}
++
+ namespace policy {
+ class UserCloudPolicyManager;
+ }
+@@ -701,6 +705,9 @@ class BrowserView : public BrowserWindow
+   // The view hosting the contents web view.
+   raw_ptr<ContentsWebView, DanglingUntriaged> contents_web_view_ = nullptr;
+
++  // AI Sidebar web view
++  raw_ptr<views::WebView> ai_sidebar_web_view_ = nullptr;
++
+   // The view hosting devtools.
+   raw_ptr<views::WebView> devtools_web_view_ = nullptr;
+
+--- a/chrome/browser/ui/views/frame/browser_view.cc
++++ b/chrome/browser/ui/views/frame/browser_view.cc
+@@ -13,6 +13,7 @@
+ #include <utility>
+ #include <vector>
+
++#include "base/command_line.h"
+ #include "base/auto_reset.h"
+ #include "base/command_line.h"
+ #include "base/containers/contains.h"
+@@ -203,6 +204,7 @@
+ #include "ui/views/controls/separator.h"
+ #include "ui/views/controls/textfield/textfield.h"
+ #include "ui/views/controls/webview/webview.h"
++#include "components/ai_sidebar/resources.h"
+ #include "ui/views/interaction/element_tracker_views.h"
+ #include "ui/views/layout/fill_layout.h"
+ #include "ui/views/layout/flex_layout.h"
+@@ -2076,6 +2078,24 @@ void BrowserView::AddedToWidget() {
+     loading_bar_ = top_container()->AddChildView(
+         std::make_unique<TopContainerLoadingBar>(browser_->profile()));
+   }
++
++  // Add AI sidebar if enabled
++  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("disable-ai-sidebar")) {
++    ai_sidebar_web_view_ = contents_container_->AddChildViewAt(
++        std::make_unique<views::WebView>(browser_->profile()), 1);
++
++    // Set the sidebar width
++    ai_sidebar_web_view_->SetPreferredSize(gfx::Size(400, 0));
++
++    // Load the AI sidebar WebUI
++    ai_sidebar_web_view_->LoadInitialURL(GURL("chrome://ai-sidebar"));
++
++    // Initially hidden
++    ai_sidebar_web_view_->SetVisible(false);
++
++    // Update layout
++    contents_container_->Layout();
++  }
+ }
+
+ void BrowserView::InitStatusBubble() {
+@@ -3518,6 +3538,17 @@ void BrowserView::ExecuteExtensionComman
+       bubble_tracker_, kToolbarExtensionsMenuElementId, this);
+ }
+
++void BrowserView::ToggleAISidebar() {
++  if (!ai_sidebar_web_view_) {
++    return;
++  }
++
++  bool is_visible = ai_sidebar_web_view_->GetVisible();
++  ai_sidebar_web_view_->SetVisible(!is_visible);
++  contents_container_->Layout();
++  InvalidateLayout();
++}
++
+ ExclusiveAccessContext* BrowserView::GetExclusiveAccessContext() {
+   return this;
+ }
+--- a/chrome/browser/ui/views/frame/browser_view.h
++++ b/chrome/browser/ui/views/frame/browser_view.h
+@@ -367,6 +367,8 @@ class BrowserView : public BrowserWindow
+       ToolbarButtonProvider::ExtensionKeybindingMatchType match_type) override;
+   void ExecuteExtensionCommand(const extensions::Extension* extension,
+                                const extensions::Command& command) override;
++
++  void ToggleAISidebar();
+
+   // ExclusiveAccessContext overrides
+   Profile* GetProfile() override;

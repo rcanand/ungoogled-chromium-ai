@@ -1,0 +1,91 @@
+# Add AI Sidebar toolbar button
+
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.h
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.h
+@@ -290,6 +290,7 @@ class ToolbarView : public views::Access
+   raw_ptr<MediaToolbarButtonView> media_button_ = nullptr;
+   raw_ptr<ChromeLabsButton> chrome_labs_button_ = nullptr;
+   raw_ptr<DownloadToolbarButtonView> download_button_ = nullptr;
++  raw_ptr<ToolbarButton> ai_sidebar_button_ = nullptr;
+   raw_ptr<BrowserAppMenuButton> app_menu_button_ = nullptr;
+
+   raw_ptr<BrowserActionsContainer> browser_actions_ = nullptr;
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+@@ -13,6 +13,7 @@
+ #include <utility>
+ #include <vector>
+
++#include "base/command_line.h"
+ #include "base/command_line.h"
+ #include "base/containers/fixed_flat_map.h"
+ #include "base/feature_list.h"
+@@ -103,6 +104,7 @@
+ #include "components/omnibox/browser/omnibox_view.h"
+ #include "components/prefs/pref_service.h"
+ #include "components/strings/grit/components_strings.h"
++#include "components/ai_sidebar/resources.h"
+ #include "content/public/browser/render_view_host.h"
+ #include "content/public/browser/web_contents.h"
+ #include "media/base/media_switches.h"
+@@ -646,6 +648,21 @@ void ToolbarView::Init() {
+                                     : nullptr;
+   }
+
++  // Add AI Sidebar button
++  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("disable-ai-sidebar")) {
++    auto ai_sidebar_button = std::make_unique<ToolbarButton>(
++        base::BindRepeating(&ToolbarView::OnAISidebarButtonPressed,
++                           base::Unretained(this)));
++    ai_sidebar_button->SetTooltipText(u"Toggle AI Chat");
++    ai_sidebar_button->SetAccessibleName(u"AI Chat");
++    ai_sidebar_button->SetVectorIcon(kChatIcon);
++    ai_sidebar_button->SetImageModel(
++        views::Button::STATE_NORMAL,
++        ui::ImageModel::FromVectorIcon(kChatIcon, kColorToolbarButtonIcon));
++    ai_sidebar_button_ = container->AddChildView(std::move(ai_sidebar_button));
++    LoadImages();
++  }
++
+   auto app_menu_button = std::make_unique<BrowserAppMenuButton>(this);
+   app_menu_button->SetFlipCanvasOnPaintForRTLUI(true);
+   app_menu_button->SetAccessibleName(
+@@ -1076,6 +1093,13 @@ void ToolbarView::OnChromeLabsButtonPres
+
+ }
+
++void ToolbarView::OnAISidebarButtonPressed() {
++  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
++  if (browser_view) {
++    browser_view->ToggleAISidebar();
++  }
++}
++
+ void ToolbarView::ShowIntentPickerBubble(
+     std::vector<IntentPickerBubbleView::AppInfo> app_info,
+     bool show_stay_in_chrome,
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.h
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.h
+@@ -214,6 +214,7 @@ class ToolbarView : public views::Access
+   void OnMediaButtonPressed();
+   void OnChipButtonPressed();
+   void OnChromeLabsButtonPressed();
++  void OnAISidebarButtonPressed();
+
+   // Shows the app (three-dot) menu. |for_drop| indicates whether the menu is
+   // opened for drag-and-drop.
+--- a/chrome/app/vector_icons/chat.icon
++++ b/chrome/app/vector_icons/chat.icon
+@@ -0,0 +1,12 @@
++// Copyright 2024 The Chromium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++CANVAS_DIMENSIONS, 24,
++PATH_COLOR_ARGB, 0xFF, 0x5F, 0x63, 0x68,
++MOVE_TO, 20, 2,
++R_H_LINE_TO, -16,
++R_ARC_TO, 2, 2, 0, 0, 0, -2, 2,
++R_V_LINE_TO, 12,
++R_ARC_TO, 2, 2, 0, 0, 0, 2, 2,
++R_H_LINE_TO, 16

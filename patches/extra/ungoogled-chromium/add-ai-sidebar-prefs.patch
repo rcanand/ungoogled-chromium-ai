@@ -1,0 +1,16 @@
+# Register AI Sidebar preferences
+
+--- a/chrome/browser/prefs/browser_prefs.cc
++++ b/chrome/browser/prefs/browser_prefs.cc
+@@ -523,6 +523,11 @@ void RegisterProfilePrefs(PrefRegistryS
+   BookmarkModelTypeProcessorMetrics::RegisterProfilePrefs(registry);
+   BookmarkUndoService::RegisterProfilePrefs(registry);
+
++  // AI Sidebar preferences
++  registry->RegisterStringPref("ai_sidebar.openrouter_api_key", "");
++  registry->RegisterStringPref("ai_sidebar.ollama_endpoint", "http://localhost:11434");
++  registry->RegisterStringPref("ai_sidebar.mlx_model_dir", "");
++
+   BrowsingDataLifetimeManager::RegisterProfilePrefs(registry);
+   BrowsingDataRemover::RegisterProfilePrefs(registry);
+   BrowserLocalStatePrefs::RegisterProfilePrefs(registry);
